@@ -1,25 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.example"
-version="2.4.0"
-name="Example Kodi Video Plugin"
-provider-name="Roman_V_M">
-<requires>
-  <import addon="xbmc.python" version="3.0.0"/>
-</requires>
-<extension point="xbmc.python.pluginsource" library="main.py">
-  <provides>video</provides>
-</extension>
-<extension point="xbmc.addon.metadata">
-  <summary lang="en">Example Kodi Video Plugin</summary>
-  <description lang="en_GB">An example video plugin for Kodi mediacenter.</description>
-  <disclaimer lang="en_GB">Free sample videos are provided by www.vidsplay.com.</disclaimer>
-  <assets>
-    <icon>icon.png</icon>
-    <fanart>fanart.jpg</fanart>
-    <screenshot>resources\screenshot-01.jpg</screenshot>
-    <screenshot>resources\screenshot-02.jpg</screenshot>
-    <screenshot>resources\screenshot-03.jpg</screenshot>    
-  </assets>
-  <news>Updated with latest artwork metadata</news>
-</extension>
+<addon id="plugin.video.sklk"
+       version="0.0.21"
+       name="sklk"
+       provider-name="krk">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.module.simplejson" version="2.0.10"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="main.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">sklk pluginas</summary>
+        <description lang="en_GB">nera jokio aprasymo</description>
+        <disclaimer lang="en_GB">cia irgi nieko nera</disclaimer>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
+        <news>jokiu naujienu..</news>
+    </extension>
 </addon>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <setting id="my_setting" type="bool" default="true" label="My Setting"/>
+    <setting id="api_url" type="text" default="http://sklk.lt:8181/api" label="API URL"/>
+    <setting id="video_url" type="text" default="http://sklk.lt:8181" label="VIDEO URL"/>
+</settings>
