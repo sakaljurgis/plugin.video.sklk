@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.sklk"
-       version="0.0.21"
+       version="0.0.22"
        name="sklk"
        provider-name="krk">
     <requires>

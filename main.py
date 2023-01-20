@@ -15,6 +15,7 @@ from urllib.parse import urlencode, parse_qsl
 import xbmcgui
 import xbmcplugin
 import xbmcaddon
+import xbmc
 
 import urllib.request
 import simplejson as json
@@ -27,11 +28,9 @@ _url = sys.argv[0]
 _handle = int(sys.argv[1])
 
 # todo - get from settings
-#API_URL = "http://krk.sytes.net:8181/api"
-#VIDEO_URL = "http://krk.sytes.net:8181"
 #API_URL = xbmcplugin.getSetting(_handle, 'api_url') #if xbmcplugin.getSetting(_handle, 'api_url') else xbmc.getSetting("api_url")
 my_addon = xbmcaddon.Addon()
-API_URL = my_addon.getSetting('api_url') # returns the string 'true' or 'false'
+API_URL = my_addon.getSetting('api_url')
 VIDEO_URL = xbmcplugin.getSetting(_handle, 'video_url')
 
 xbmcplugin.getSetting
@@ -209,7 +208,7 @@ def select_APIresponse(objAPIresponse):
 
         #show the list
         dialog = xbmcgui.Dialog() #todo - let to choose own title
-        selected = dialog.select('Select...', arrItems)
+        selected = dialog.select(objAPIresponse['category'], arrItems)
         #dialog.select('Choose a playlist', ['Playlist #1', 'Playlist #2', 'Playlist #3']) #list of strings / xbmcgui.ListItems - list of items shown in dialog.
 
         if selected == -1:
@@ -217,10 +216,10 @@ def select_APIresponse(objAPIresponse):
         else:
             #invoke self run on selected item
             strPath = items[selected]['path']
-            url = get_url(action='query', path=strPath, selected=selected)
-            #xbmcgui.Dialog().ok("running Container.Update", url)
-            #xbmc.executebuiltin("Container.Update(" + url + ")")
-            xbmc.executebuiltin('Container.Update(%s)' % url)
+            params = {'action': 'query', 'path': strPath}
+            url = urlencode(params)
+            #xbmcgui.Dialog().ok("running queryApi", url)
+            queryAPI(url)
 
 
 def play_video(path):
