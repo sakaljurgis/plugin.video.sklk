@@ -32,6 +32,7 @@ _handle = int(sys.argv[1])
 my_addon = xbmcaddon.Addon()
 API_URL = my_addon.getSetting('api_url')
 VIDEO_URL = xbmcplugin.getSetting(_handle, 'video_url')
+AUTH_KEY = my_addon.getSetting('auth_key')
 
 xbmcplugin.getSetting
 
@@ -39,6 +40,7 @@ def getHttpURL(url):
 
     request = urllib.request.Request(url)
     request.add_header('Accept-encoding', 'gzip')
+    request.add_header('Authorization', AUTH_KEY)
     response = urllib.request.urlopen(request)
 
     if response.info().get('Content-Encoding') == 'gzip':
