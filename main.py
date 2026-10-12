@@ -10,6 +10,7 @@
 #my_setting = my_addon.getSetting('my_setting') # returns the string 'true' or 'false'
 #my_addon.setSetting('my_setting', 'false')
 
+import re
 import sys
 from urllib.parse import urlencode, parse_qsl
 import xbmcgui
@@ -27,14 +28,13 @@ _url = sys.argv[0]
 # Get the plugin handle as an integer number.
 _handle = int(sys.argv[1])
 
-# todo - get from settings
-#API_URL = xbmcplugin.getSetting(_handle, 'api_url') #if xbmcplugin.getSetting(_handle, 'api_url') else xbmc.getSetting("api_url")
 my_addon = xbmcaddon.Addon()
-API_URL = my_addon.getSetting('api_url')
-VIDEO_URL = xbmcplugin.getSetting(_handle, 'video_url')
+# the server, e.g. https://media.example.com: menus come from <server>/api, videos from the
+# server-relative paths it lists. Stored as "api_url", which used to end with /api (next to a
+# separate video url of the same server); either way works.
+SERVER_URL = re.sub(r'/api$', '', my_addon.getSetting('api_url').strip().rstrip('/'))
+API_URL = SERVER_URL + '/api'
 AUTH_KEY = my_addon.getSetting('auth_key')
-
-xbmcplugin.getSetting
 
 def getHttpURL(url):
 
@@ -183,6 +183,9 @@ def list_APIresponse(objAPIresponse):
                 if len(contextMenus) > 0:
                     list_item.addContextMenuItems(listContextMenus)
 
+            # watched / resume point as the server has it (shared with other apps)
+            set_watch_state(list_item, item, is_folder)
+
             # Add our item to the Kodi virtual folder listing.
             xbmcplugin.addDirectoryItem(_handle, url, list_item, is_folder)
 
@@ -195,7 +198,47 @@ def list_APIresponse(objAPIresponse):
         xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_DATE)
 
     # Finish creating a virtual folder.
-    xbmcplugin.endOfDirectory(_handle)
+    # not cached: watch state may have changed (on another device too) when coming back to it
+    xbmcplugin.endOfDirectory(_handle, cacheToDisc=False)
+
+
+def set_watch_state(list_item, item, is_folder):
+    """
+    Watched state and resume point from the server, which keeps them for all apps
+    (the service reports Kodi's playback there). Set explicitly, they take
+    precedence over Kodi's own database.
+    """
+    if is_folder:
+        # shows and seasons: watched episodes out of the total
+        total = item.get('totalCount', 0)
+        if total > 0:
+            watched = item.get('watchedCount', 0)
+            list_item.setProperty('TotalEpisodes', str(total))
+            list_item.setProperty('WatchedEpisodes', str(watched))
+            list_item.setProperty('UnWatchedEpisodes', str(total - watched))
+            list_item.setInfo('video', {'playcount': 1 if watched >= total else 0})
+        return
+
+    if 'playcount' not in item:
+        return
+
+    info = {'playcount': item['playcount']}
+    if 'lastplayed' in item:
+        info['lastplayed'] = item['lastplayed']
+    list_item.setInfo('video', info)
+
+    # no resume point = 0, which also clears one Kodi may have kept;
+    # Kodi only takes it with a total time
+    resume = item.get('resume', {})
+    position = resume.get('position', 0)
+    total = resume.get('total') or item.get('duration', 0)
+    tag = list_item.getVideoInfoTag()
+    if hasattr(tag, 'setResumePoint'):
+        # Kodi 20+
+        tag.setResumePoint(position, total)
+    else:
+        list_item.setProperty('ResumeTime', str(position))
+        list_item.setProperty('TotalTime', str(total))
 
 def select_APIresponse(objAPIresponse):
 
@@ -234,7 +277,8 @@ def play_video(path):
     #xbmcgui.Dialog().ok("debug", "playvideo", path)
 
     if 'http' not in path:
-        path = VIDEO_URL + path
+        # server-relative, e.g. /api?path=all/play/103
+        path = SERVER_URL + ('' if path.startswith('/') else '/') + path
 
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=path)
@@ -302,6 +346,11 @@ def router(paramstring):
     :param paramstring: URL encoded plugin paramstring
     :type paramstring: str
     """
+
+    if not SERVER_URL:
+        xbmcgui.Dialog().ok("sklk", "Set the server URL in the add-on settings first.")
+        my_addon.openSettings()
+        return
 
     # Parse a URL-encoded paramstring to the dictionary of
     # {<parameter>: <value>} elements

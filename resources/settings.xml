@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <setting id="api_url" type="text" default="http://sklk.lt:8181/api" label="API URL"/>
-    <setting id="video_url" type="text" default="http://sklk.lt:8181" label="VIDEO URL"/>
+    <!-- the server, e.g. https://media.example.com ("api_url" for older versions' value, which ended with /api) -->
+    <setting id="api_url" type="text" default="" label="Server URL"/>
     <setting id="auth_key" type="text" default="" label="Auth key"/>
 </settings>
