@@ -3,4 +3,7 @@
     <!-- the server, e.g. https://media.example.com ("api_url" for older versions' value, which ended with /api) -->
     <setting id="api_url" type="text" default="" label="Server URL"/>
     <setting id="auth_key" type="text" default="" label="Auth key"/>
+    <!-- on the Kodi whose watched history counts (e.g. the main one); the server keeps what's newer -->
+    <setting id="send_history" type="action" label="Send this Kodi's watched history to the server"
+             action="RunPlugin(plugin://plugin.video.sklk/?action=send_history)"/>
 </settings>

@@ -338,6 +338,40 @@ def queryAPI(paramstring):
 
     #dialog.textviewer('Plot', 'Some movie plot.')
 
+def send_watched_history():
+    """
+    This Kodi's own watched history of the add-on to the server, which keeps
+    whatever it has that's newer. Meant for the Kodi whose history counts.
+    """
+    import history
+
+    dialog = xbmcgui.Dialog()
+    files = history.read_history()
+    if not files:
+        dialog.ok("sklk", "This Kodi has no watched history of the add-on.")
+        return
+    if not dialog.yesno("sklk", "Send this Kodi's watched history ({0} files) to the server?\n"
+                                "Newer state on the server stays.".format(len(files))):
+        return
+
+    progress = xbmcgui.DialogProgress()
+    progress.create("sklk", "Sending watched history...")
+
+    def on_progress(done):
+        progress.update(done * 100 // len(files))
+        return not progress.iscanceled()
+
+    try:
+        sent = history.send_history(files, on_progress)
+    finally:
+        progress.close()
+
+    if sent == len(files):
+        dialog.ok("sklk", "Sent the watched history of {0} files.".format(sent))
+    else:
+        dialog.ok("sklk", "Sent {0} of {1} files (stopped, or the server didn't answer).".format(sent, len(files)))
+
+
 def router(paramstring):
     """
     Router function that calls other functions
@@ -364,6 +398,9 @@ def router(paramstring):
         elif params['action'] == 'play':
             # Play a video from a provided URL.
             play_video(params['path'])
+        elif params['action'] == 'send_history':
+            # button in the add-on settings
+            send_watched_history()
         elif params['action'] == 'ignore':
             # do nothing, this is info item
             strVariable = "nothing"
