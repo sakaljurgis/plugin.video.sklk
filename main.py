@@ -23,6 +23,8 @@ import simplejson as json
 from io import StringIO
 import gzip
 
+from service import wait_for_report
+
 # Get the plugin url in plugin:// notation.
 _url = sys.argv[0]
 # Get the plugin handle as an integer number.
@@ -287,6 +289,9 @@ def play_video(path):
 
 
 def queryAPI(paramstring):
+
+    # a playback that just ended: its last report first, so this has it
+    wait_for_report()
 
     strAPIresponse = getHttpURL(API_URL + "?" + paramstring)
 

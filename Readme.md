@@ -13,7 +13,7 @@ versions had it, works too) and an optional auth key, sent as the `Authorization
 
 Watched state and resume points live on the server, shared with other apps (e.g. SKLK TV): listings
 come with them, and a background service (`service.py`) reports playback (every 30 s, on pause, stop
-and end). Kodi's own earlier watched history of this add-on can be sent to the server with the button
+and end; a listing opened right then waits, up to 3 s, for the last report). Kodi's own earlier watched history of this add-on can be sent to the server with the button
 in the add-on settings ("Send this Kodi's watched history to the server"); do it on the Kodi whose
 history counts, the server keeps whatever it has that's newer. Mark watched/unwatched with the add-on's own context menu entries ("Mark watched",
 "Mark all watched", ...); Kodi's built-in "Mark as watched" only changes Kodi's local database.

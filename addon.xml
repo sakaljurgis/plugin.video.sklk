@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.sklk"
-       version="0.0.25"
+       version="0.0.26"
        name="sklk"
        provider-name="krk">
     <requires>
@@ -20,6 +20,6 @@
             <icon>icon.png</icon>
             <fanart>fanart.jpg</fanart>
         </assets>
-        <news>0.0.25: sending Kodi's watched history to the server is a button in the settings. 0.0.24: watched state and resume points kept on the server, shared with other apps</news>
+        <news>0.0.26: back in the list after playback again (it was lost: the service refreshed it while Kodi was reloading it). 0.0.25:sending Kodi's watched history to the server is a button in the settings. 0.0.24: watched state and resume points kept on the server, shared with other apps</news>
     </extension>
 </addon>

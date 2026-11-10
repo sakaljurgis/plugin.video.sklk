@@ -11,11 +11,17 @@ import urllib.request
 
 import xbmc
 import xbmcaddon
+import xbmcgui
 
 ADDON_ID = xbmcaddon.Addon().getAddonInfo('id')
 FILE_ID = re.compile(r'all/play/(\d+)')
 REPORT_EVERY = 30  # seconds, while playing
+REPORT_TIMEOUT = 10  # seconds
 CLIENT = 'kodi'
+# home window property, set (to the time it started) while the last report of a
+# playback is on its way, see wait_for_report()
+REPORTING = ADDON_ID + '.reporting'
+REPORT_WAIT = 3  # seconds, the most a listing waits for it
 
 
 def log(message, level=xbmc.LOGINFO):
@@ -46,7 +52,7 @@ def report(file_id, position, duration, event, at=None):
         method='POST',
     )
     try:
-        with urllib.request.urlopen(request, timeout=10) as response:
+        with urllib.request.urlopen(request, timeout=REPORT_TIMEOUT) as response:
             response.read()
         return True
     except Exception as e:
@@ -60,10 +66,32 @@ def is_ours(url):
     return bool(server) and url.startswith(server + '/')
 
 
-def refresh_if_ours():
-    # e.g. Continue watching moves on to the next episode
-    if xbmc.getInfoLabel('Container.FolderPath').startswith('plugin://' + ADDON_ID):
-        xbmc.executebuiltin('Container.Refresh')
+def reporting():
+    """True while the service sends the last report of a playback."""
+    try:
+        started = float(xbmcgui.Window(10000).getProperty(REPORTING))
+    except ValueError:
+        return False
+    # an older one: the service went away before clearing it
+    return time.time() - started < REPORT_TIMEOUT + 5
+
+
+def wait_for_report():
+    """
+    Before a listing (main.py): lets the last report of a playback that just
+    ended reach the server first, for at most REPORT_WAIT seconds.
+
+    Kodi reloads the list itself when it leaves the player, which then shows
+    the new resume point (Continue watching: the next episode). No
+    Container.Refresh from here for that: it would run while Kodi's own reload
+    is still going, and the two loads of the plugin get mixed up, so Kodi
+    loses the list (drops to the parent folder or the Videos root).
+    """
+    monitor = xbmc.Monitor()
+    deadline = time.time() + REPORT_WAIT
+    while reporting() and time.time() < deadline:
+        if monitor.waitForAbort(0.1):
+            break
 
 
 class Player(xbmc.Player):
@@ -132,9 +160,14 @@ class Player(xbmc.Player):
             return
         if event == 'end':
             self.position = self.duration
-        self.send(event)
+        # the list Kodi reloads now waits for it (wait_for_report)
+        home = xbmcgui.Window(10000)
+        home.setProperty(REPORTING, str(time.time()))
+        try:
+            self.send(event)
+        finally:
+            home.clearProperty(REPORTING)
         self.file_id = None
-        refresh_if_ours()
 
     def send(self, event):
         self.last_report = time.time()
